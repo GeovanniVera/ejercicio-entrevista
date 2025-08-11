@@ -12,6 +12,22 @@ export function iniciarFormulario() {
     const containerForm = document.getElementById('container-form');
     containerForm.innerHTML = renderForm(initialValues, {})
 
+
+    const renderAndAttachListeners = (data = initialValues, errors = {}) => {
+        containerForm.innerHTML = renderForm(data, errors);
+
+        const inputName = document.getElementById('name');
+        const inputLastName = document.getElementById('lastname');
+        const inputTel = document.getElementById('tel');
+
+        validateLetters(inputName);
+        validateLetters(inputLastName);
+        validateNumbers(inputTel);
+    };
+
+    // Llamamos a la función para la primera renderización.
+    renderAndAttachListeners();
+
     //obtenemos los datos del formulario cuando el usuario de click en contactar
     containerForm.addEventListener('submit', (e) => {
         if (e.target.matches('#form')) {
@@ -30,13 +46,12 @@ export function iniciarFormulario() {
 
 
             if (Object.keys(errors).length > 0) {
-                containerForm.innerHTML = renderForm(data, errors)
-            } else {
+                renderAndAttachListeners(data, errors);
 
-                
+            } else {
                 //mostramos una alerta tipo toast
                 toast('¡Formulario enviado con éxito!', true);
-                containerForm.innerHTML = renderForm()
+                renderAndAttachListeners();        
                 e.target.reset();
             }
         }
@@ -69,22 +84,22 @@ function renderForm(data = initialValues, errors = {}) {
                 <h3>Contáctanos</h3>
                 <div class ="field">
                     <label for="name">Nombre</label>
-                    <input type="text" id="name" name="name" value="${data.name}">
+                    <input type="text" id="name" name="name" value="${data.name}" class="${errors.name ? 'border-error' : ''}">
                     <span class="error" name="error-name" id="error-name">${errors.name ? errors.name : ''}</span>
                 </div>
                 <div class ="field">
                     <label for="last_name">Apellido</label>
-                    <input type="text" id="lastname" name="lastname" value="${data.lastname}">
+                    <input type="text" id="lastname" class="${errors.lastname ? 'border-error' : ''}" name="lastname" value="${data.lastname}">
                     <span class="error" name="error-lastname" id="error-lastname">${errors.lastname ? errors.lastname : ''}</span>
                 </div>
                 <div class ="field">
                     <label for="age">Correo Electrónico:</label>
-                    <input type="email" id="email" name="email" value="${data.email}">
+                    <input type="email" id="email" name="email" value="${data.email}" class="${errors.email ? 'border-error' : ''}">
                     <span class="error" name="error-email" id="error-email">${errors.email ? errors.email : ''}</span>
                 </div>
                 <div class ="field">
                     <label for="tel">Numero Telefónico:</label>
-                    <input type="tel" id="tel" name="tel" value="${data.tel ? data.tel : ''}">
+                    <input type="tel" id="tel" name="tel" value="${data.tel ? data.tel : ''}" class="${errors.tel ? 'border-error' : ''}">
                     <span class="error" name="error-tel" id="error-tel">${errors.tel ? errors.tel : ''}</span>
                 </div>
                 <button type="submit" class="btn red red-hover">Contactar</button>
@@ -118,7 +133,7 @@ export function validate(data) {
         errors['lastname'] = "Este formato es invalido";
     }
 
-    if (data['email'].trim() === '' ) {
+    if (data['email'].trim() === '') {
         errors['email'] = "Este campo es obligatorio";
     } else if (data.email && !emailRegex.test(data.email)) {
         errors['email'] = "El correo electrónico debe contener un simbolo de @";
@@ -134,4 +149,25 @@ export function validate(data) {
     return errors;
 }
 
+const validateLetters = (reference) => {
+    reference.addEventListener('keydown', function (evento) {
+        const key = evento.keyCode || evento.which;
+        const tecla = String.fromCharCode(key);
+        const patron = /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/;
+        if (!patron.test(tecla) && key !== 8 && key !== 46 && key !== 9 && (key < 37 || key > 40)) {
+            evento.preventDefault();
+        }
+    });
+}
 
+
+const validateNumbers = (reference) => {
+    reference.addEventListener('keydown', function (evento) {
+        const key = evento.keyCode || evento.which;
+        const tecla = String.fromCharCode(key);
+        const patron = /[0-9]/;
+        if (!patron.test(tecla) && key !== 8 && key !== 46 && key !== 9 && (key < 37 || key > 40)) {
+            evento.preventDefault();
+        }
+    });
+}
